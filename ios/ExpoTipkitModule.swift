@@ -1,44 +1,125 @@
 import ExpoModulesCore
+import UIKit
+import TipKit
+import Foundation
+
+// implement basic tip view
+
+struct SearchTip: Tip {
+    var id: String
+    var title: Text {
+        Text("Add a new game")
+    }
+    
+    var message: Text? {
+        Text("Search for new games to play via IGDB.")
+    }
+    
+    var asset: Image? {
+        Image(systemName: "magnifyingglass")
+    }
+}
+
 
 public class ExpoTipkitModule: Module {
-  // Each module class must implement the definition function. The definition consists of components
-  // that describes the module's functionality and behavior.
-  // See https://docs.expo.dev/modules/module-api for more details about available components.
-  public func definition() -> ModuleDefinition {
-    // Sets the name of the module that JavaScript code will use to refer to the module. Takes a string as an argument.
-    // Can be inferred from module's class name, but it's recommended to set it explicitly for clarity.
-    // The module will be accessible from `requireNativeModule('ExpoTipkit')` in JavaScript.
-    Name("ExpoTipkit")
+    private weak var tipSourceView: UIView?
 
-    // Sets constant properties on the module. Can take a dictionary or a closure that returns a dictionary.
-    Constants([
-      "PI": Double.pi
-    ])
-
-    // Defines event names that the module can send to JavaScript.
-    Events("onChange")
-
-    // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
-    Function("hello") {
-      return "Hello world! 👋"
+    public func registerTipSourceView(_ view: UIView) {
+        self.tipSourceView = view
     }
-
-    // Defines a JavaScript function that always returns a Promise and whose native code
-    // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("setValueAsync") { (value: String) in
-      // Send an event to JavaScript.
-      self.sendEvent("onChange", [
-        "value": value
-      ])
+    
+    public func definition() -> ModuleDefinition {
+        
+        Name("ExpoTipkit")
+        
+        OnCreate {
+            self.configureTipKit()
+        }
+        
+        Function("displayTip") { (tipId: String, tag: Int) in
+            if #available(iOS 17.0, *) {
+                self.displayTip(tipId: tipId, tag: tag)
+            } else {
+                // Fallback on earlier versions
+            }
+        }
+        
+        View(ExpoTipkitView.self) {
+            // Defines a setter for the `name` prop.
+            Prop("name") { (view: ExpoTipkitView, prop: String) in
+                print(prop)
+            }
+        }
     }
-
-    // Enables the module to be used as a native view. Definition components that are accepted as part of the
-    // view definition: Prop, Events.
-    View(ExpoTipkitView.self) {
-      // Defines a setter for the `name` prop.
-      Prop("name") { (view: ExpoTipkitView, prop: String) in
-        print(prop)
-      }
+    
+    private func configureTipKit() {
+        Task {
+            if #available(iOS 17.0, *) {
+                try?  Tips.configure()
+            } else {
+                // Fallback on earlier versions
+            }
+        }
     }
-  }
+    
+    @available(iOS 17.0, *)
+    private func shouldDisplayTip(tip: SearchTip) async throws -> Bool {
+        for try await shouldDisplay in tip.shouldDisplayUpdates {
+            if shouldDisplay {
+                return true
+            }
+        }
+        return false
+    }
+    var searchButton: UIButton = UIButton(type: .system)
+
+    @available(iOS 17.0, *)
+    private func displayTip(tipId: String, tag: Int) {
+
+        
+        DispatchQueue.main.async {
+            guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                  let rootViewController = windowScene.windows.first?.rootViewController,
+                  let view = rootViewController.view.subviews.first else {
+                
+                print("Could not find view with tag")
+             
+                return
+            }
+            
+            
+
+//            self.searchButton.setTitle("Search", for: .normal)
+//            self.searchButton.frame = CGRect(x: 100, y: 100, width: 100, height: 50)
+//            
+//            view.addSubview(self.searchButton)
+//            
+//            
+            let tip = SearchTip(id: tipId)
+            Task { @MainActor in
+                do {
+                        
+                    let shouldDisplay = try await self.shouldDisplayTip(tip: tip)
+                        
+                        
+                        if shouldDisplay {
+                            let controller = TipUIPopoverViewController(tip, sourceItem: self.tipSourceView!)
+                                
+                                rootViewController.present(controller, animated: true)
+                           
+                        } else if rootViewController.presentedViewController is TipUIPopoverViewController {
+                            rootViewController.dismiss(animated: true)
+                        }
+                    } catch {
+                        print("Error during async operation: \(error)")
+                    }
+                }
+            
+        }
+    
+        
+    }
+           
+            
+
 }
