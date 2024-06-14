@@ -4,4 +4,7 @@ export type ChangeEventPayload = {
   value: string;
 };
 
-export interface ExpoTipkitViewProps extends ViewProps {}
+export interface ExpoTipkitViewProps extends ViewProps {
+  title: string;
+  id: string;
+}
