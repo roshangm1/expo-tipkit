@@ -1,35 +1,29 @@
 import { Button, SafeAreaView, StyleSheet, Text, View } from "react-native";
 
 import * as ExpoTipkit from "expo-tipkit";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 export default function App() {
   const ref = useRef(null);
 
+  const [showCount, setShowCount] = useState(0);
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
-        <ExpoTipkit.ExpoTipkitView id="tip1" title="Hello Rashila">
-          <View style={{ height: 100, backgroundColor: "red" }}>
+        <ExpoTipkit.ExpoTipkitView
+          id="tip5"
+          title="Hello Roshan"
+          show={showCount === 3}
+        >
+          <View style={{ height: 100, backgroundColor: "blue" }}>
             <Text>Hello from React Native world</Text>
-            <Button onPress={() => {}} title="Display Tip" />
-          </View>
-        </ExpoTipkit.ExpoTipkitView>
-        <ExpoTipkit.ExpoTipkitView id="tip2" title="Hello Roshan">
-          <View
-            style={{ height: 100, backgroundColor: "blue", marginTop: 100 }}
-          >
-            <Text>Hello from React Native world</Text>
-            <Button onPress={() => {}} title="Display Tip" />
-          </View>
-        </ExpoTipkit.ExpoTipkitView>
-
-        <ExpoTipkit.ExpoTipkitView id="tip3" title="Hello Everyone">
-          <View
-            style={{ height: 100, backgroundColor: "yellow", marginTop: 100 }}
-          >
-            <Text>Hello from React Native world</Text>
-            <Button onPress={() => {}} title="Display Tip" />
+            <Button
+              onPress={() => {
+                setShowCount(showCount + 1);
+              }}
+              title="Display Tip"
+            />
           </View>
         </ExpoTipkit.ExpoTipkitView>
       </View>
