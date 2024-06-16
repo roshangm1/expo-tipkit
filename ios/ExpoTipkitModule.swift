@@ -25,6 +25,10 @@ public class ExpoTipkitModule: Module {
             Prop("id") {(view: ExpoTipkitView, id: String) in
                 view.setTipId(id)
             }
+            Prop("show") {(view: ExpoTipkitView, show: Bool) in
+                view.setShow(show)
+                
+            }
         }
     }
     

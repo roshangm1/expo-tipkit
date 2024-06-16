@@ -5,27 +5,39 @@ import TipKit
 // to apply the proper styling (e.g. border radius and shadows).
 
 
+@available(iOS 17.0, *)
+struct SearchTip: Tip {
+    @Parameter
+    var show: Bool = false
+    
+
+    var id: String
+    var title: Text
+    var message: Text? {
+        Text("Search for new games to play via IGDB.")
+    }
+    
+    var asset: Image? {
+        Image(systemName: "magnifyingglass")
+    }
+    
+    var rules: [Rule] {
+       
+        #Rule($show) { $0 == true }
+     
+        
+    }
+        
+    init(id: String, title: String, show: Bool) {
+        self.title = Text(title)
+        self.id = id
+        self.show = show
+        
+
+    }
+}
 
 class ExpoTipkitView: ExpoView {
- 
-
-    struct SearchTip: Tip {
-        var id: String
-        var title: Text
-        var message: Text? {
-            Text("Search for new games to play via IGDB.")
-        }
-        
-        var asset: Image? {
-            Image(systemName: "magnifyingglass")
-        }
-        
-        init(id: String, title: String) {
-            self.title = Text(title)
-            self.id = id
-        }
-    }
-
 
     @available(iOS 17.0, *)
     private func shouldDisplayTip(tip: SearchTip) async throws -> Bool {
@@ -45,6 +57,10 @@ class ExpoTipkitView: ExpoView {
         self.id = id
     }
     
+    func setShow(_ show: Bool) {
+        self.show = show
+    }
+    
     @available(iOS 17.0, *)
     func showTipView(){
         var tipPopoverController: TipUIPopoverViewController?
@@ -54,15 +70,12 @@ class ExpoTipkitView: ExpoView {
         let subview = reactSubviews.first
 
         DispatchQueue.main.async {
-            
-          
             guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                   let rootViewController = windowScene.windows.first?.rootViewController else {
                 return
             }
             
-            let tip = SearchTip(id: self.id!, title: self.title! )
-            
+            let tip = SearchTip(id: self.id!, title: self.title!,show: self.show! )
           
             Task { @MainActor in
                 
@@ -119,6 +132,14 @@ class ExpoTipkitView: ExpoView {
         }
     }}
     
+    
+    var show: Bool? {didSet {
+        if #available(iOS 17.0, *) {
+            showTipView()
+        } else {
+            
+        }
+    }}
            
 
 }
